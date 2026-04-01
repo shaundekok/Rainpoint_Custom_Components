@@ -1,6 +1,8 @@
 # Rainpoint API Custom Integration
 Thank you to https://github.com/Remboooo for making this possible
 
+Please note that this is an experimental project and you use it at your own risk.
+
 Requirements:
 1. Home Assistant
 2. Rainpoint or Homgar Application:
