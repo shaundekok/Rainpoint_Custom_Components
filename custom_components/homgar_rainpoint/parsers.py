@@ -656,48 +656,6 @@ def parse_hcs026frf(
     return device
 
 
-def parse_generic_raw(
-    *, subdevice: dict[str, Any], status_items: dict[str, dict[str, Any]]
-) -> ParsedDevice:
-    """Fallback parser for unsupported RainPoint/Homgar subdevices.
-
-    Creates a generic device with a single RAW data sensor so unsupported
-    models still show up in Home Assistant.
-    """
-    model = subdevice.get("model") or "unknown_model"
-    addr = subdevice.get("addr")
-    did = str(subdevice.get("did") or f"unknown_{model}_{addr}")
-
-    value = _status_value(status_items, f"D{subdevice['addr']:02d}") or ""
-    payload = value.split(";", 1)[1] if ";" in value else value
-
-    device = ParsedDevice(
-        device_id=did,
-        device_name=subdevice.get("name") or f"{model} Sensor",
-        model=model,
-        model_code=subdevice.get("modelCode"),
-        via_device_id=str(subdevice.get("mid")) if subdevice.get("mid") is not None else None,
-    )
-
-    device.add_entity(
-        key="raw_data",
-        name="Raw Data",
-        native_value=payload or value or None,
-        icon="mdi:code-json",
-        entity_category="diagnostic",
-        extra_state_attributes={
-            "full_status_value": value or None,
-            "model": model,
-            "model_code": subdevice.get("modelCode"),
-            "address": addr,
-            "did": subdevice.get("did"),
-            "mid": subdevice.get("mid"),
-            "type": subdevice.get("type"),
-        },
-    )
-
-    return device
-
 SENSOR_PARSERS = {
     "HCS021FRF": parse_hcs021frf,
     "HCS012ARF": parse_hcs012arf,
