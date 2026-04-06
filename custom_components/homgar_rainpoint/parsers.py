@@ -655,6 +655,7 @@ def parse_hcs026frf(
         )
     return device
 
+
 def parse_generic_raw(
     *, subdevice: dict[str, Any], status_items: dict[str, dict[str, Any]]
 ) -> ParsedDevice:
