@@ -25,7 +25,13 @@ Setup
 
 HACS
 
+1. Click on the link below to add the Github as a customer repository:
+
 [![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=shaundekok&repository=Rainpoint_Custom_Components&category=integration)
+
+2. Download the integration
+3. Reboot you HA Instance
+4. Add the Homgar/RainPoint Integration and provide the requested Details
 
 Manual
 
