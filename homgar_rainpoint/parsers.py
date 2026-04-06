@@ -451,15 +451,15 @@ def parse_hcs008frf(
     return device
 
 
-def parse_pool(
+def parse_HCS0528ARF(
     *, subdevice: dict[str, Any], status_items: dict[str, dict[str, Any]]
 ) -> ParsedDevice:
     value = _status_value(status_items, f"D{subdevice['addr']:02d}") or ""
     payload = value.split(";", 1)[1] if ";" in value else value
     device = ParsedDevice(
         device_id=str(subdevice["did"]),
-        device_name=subdevice.get("name") or "Pool Sensor",
-        model=subdevice.get("model", "Pool"),
+        device_name=subdevice.get("name") or "HCS0528ARF Sensor",
+        model=subdevice.get("model", "HCS0528ARF"),
         model_code=subdevice.get("modelCode"),
         via_device_id=str(subdevice.get("mid")) if subdevice.get("mid") is not None else None,
     )
@@ -661,7 +661,7 @@ SENSOR_PARSERS = {
     "HCS012ARF": parse_hcs012arf,
     "HCS014ARF": parse_hcs014arf,
     "HCS008FRF": parse_hcs008frf,
-    "Pool": parse_pool,
+    "HCS0528ARF": parse_HCS0528ARF,
     "HCS0530THO": parse_hcs0530tho,
     "HCS026FRF": parse_hcs026frf,
 }
