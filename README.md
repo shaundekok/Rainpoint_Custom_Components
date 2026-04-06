@@ -22,6 +22,13 @@ Requirements:
   - If they are not, remove the sensors that are after the gap and re-add them. This should close this gap and prevent the flow from erroring out.
 
 Setup
+
+HACS
+
+[![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=shaundekok&repository=Rainpoint_Custom_Components&category=integration)
+
+Manual
+
 1. Copy the homgar_rainpoint into the \config\custom_components\ folder in Home Assistant
 2. Reboot your HA Instance
 3. Add the Homgar/RainPoint Integration and provide the requested Details
