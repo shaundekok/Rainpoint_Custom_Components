@@ -525,7 +525,7 @@ def parse_hcs0530tho(
     payload = value.split(";", 1)[1] if ";" in value else value
     device = ParsedDevice(
         device_id=str(subdevice["did"]),
-        device_name=subdevice.get("name") or "CO2 Sensor",
+        device_name=subdevice.get("name") or "Temperature / Humidity Sensor",
         model=subdevice.get("model", "HCS0530THO"),
         model_code=subdevice.get("modelCode"),
         via_device_id=str(subdevice.get("mid")) if subdevice.get("mid") is not None else None,
@@ -533,54 +533,62 @@ def parse_hcs0530tho(
     if payload:
         p1 = _safe_slice(payload, 7, 9)
         p2 = _safe_slice(payload, 5, 7)
-        p3 = _safe_slice(payload, 53, 55)
-        p4 = _safe_slice(payload, 51, 53)
-        p5 = _safe_slice(payload, 57, 59)
-        p6 = _safe_slice(payload, 55, 57)
-        p7 = _safe_slice(payload, 35, 37)
-        p8 = _safe_slice(payload, 33, 35)
-        p9 = _safe_slice(payload, 39, 41)
-        p10 = _safe_slice(payload, 61, 63)
-        p11 = _safe_slice(payload, 59, 61)
-        p12 = _safe_slice(payload, 67, 69)
+        p3 = _safe_slice(payload, 11, 13)
+        p4 = _safe_slice(payload, 9, 11)
+        p5 = _safe_slice(payload, 25, 27)
+        p6 = _safe_slice(payload, 23, 25)
+        p7 = _safe_slice(payload, 29, 31)
+        p8 = _safe_slice(payload, 35, 37)
+        p9 = _safe_slice(payload, 33, 35)
+        p10 = _safe_slice(payload, 39, 41)
+        p11 = _safe_slice(payload, 37, 39)
+        p12 = _safe_slice(payload, 43, 45)
 
-        device.add_entity(
-            key="co2",
-            name="CO₂",
-            native_value=int(p1 + p2, 16) if p1 and p2 else None,
-            device_class="carbon_dioxide",
-            state_class="measurement",
-            native_unit_of_measurement="ppm",
-        )
-        device.add_entity(
-            key="co2_low",
-            name="CO₂ Low",
-            native_value=int(p3 + p4, 16) if p3 and p4 else None,
-            device_class="carbon_dioxide",
-            native_unit_of_measurement="ppm",
-        )
-        device.add_entity(
-            key="co2_high",
-            name="CO₂ High",
-            native_value=int(p5 + p6, 16) if p5 and p6 else None,
-            device_class="carbon_dioxide",
-            native_unit_of_measurement="ppm",
-        )
         device.add_entity(
             key="temperature",
             name="Temperature",
-            native_value=_f_tenths_hex_to_c(p7, p8),
+            native_value=_f_tenths_hex_to_c(p5, p6),
             device_class="temperature",
             state_class="measurement",
             native_unit_of_measurement="°C",
             suggested_display_precision=2,
         )
         device.add_entity(
+            key="temperature_high",
+            name="Temperature High",
+            native_value=_f_tenths_hex_to_c(p3, p4),
+            device_class="temperature",
+            native_unit_of_measurement="°C",
+            suggested_display_precision=2,
+        )
+        device.add_entity(
+            key="temperature_low",
+            name="Temperature Low",
+            native_value=_f_tenths_hex_to_c(p1, p2),
+            device_class="temperature",
+            native_unit_of_measurement="°C",
+            suggested_display_precision=2,
+        )
+        device.add_entity(
             key="humidity",
             name="Humidity",
-            native_value=int(p9, 16) if p9 else None,
+            native_value=int(p7, 16) if p7 else None,
             device_class="humidity",
             state_class="measurement",
+            native_unit_of_measurement="%",
+        )
+        device.add_entity(
+            key="humidity_high",
+            name="Humidity High",
+            native_value=int(p8, 16) if p8 else None,
+            device_class="humidity",
+            native_unit_of_measurement="%",
+        )
+        device.add_entity(
+            key="humidity_low",
+            name="Humidity Low",
+            native_value=int(p9, 16) if p9 else None,
+            device_class="humidity",
             native_unit_of_measurement="%",
         )
         device.add_entity(
@@ -653,6 +661,44 @@ def parse_hcs026frf(
             entity_category="diagnostic",
             enabled_default=False,
         )
+    return device
+
+
+def parse_generic_raw(
+    *, subdevice: dict[str, Any], status_items: dict[str, dict[str, Any]]
+) -> ParsedDevice:
+    """Fallback parser for unsupported RainPoint/Homgar subdevices."""
+    model = subdevice.get("model") or "unknown_model"
+    addr = subdevice.get("addr")
+    did = str(subdevice.get("did") or f"unknown_{model}_{addr}")
+
+    value = _status_value(status_items, f"D{subdevice['addr']:02d}") or ""
+    payload = value.split(";", 1)[1] if ";" in value else value
+
+    device = ParsedDevice(
+        device_id=did,
+        device_name=subdevice.get("name") or f"{model} Sensor",
+        model=model,
+        model_code=subdevice.get("modelCode"),
+        via_device_id=str(subdevice.get("mid")) if subdevice.get("mid") is not None else None,
+    )
+
+    device.add_entity(
+        key="raw_data",
+        name="Raw Data",
+        native_value=payload or value or None,
+        icon="mdi:code-json",
+        extra_state_attributes={
+            "full_status_value": value or None,
+            "model": model,
+            "model_code": subdevice.get("modelCode"),
+            "address": addr,
+            "did": subdevice.get("did"),
+            "mid": subdevice.get("mid"),
+            "type": subdevice.get("type"),
+        },
+    )
+
     return device
 
 

@@ -11,7 +11,7 @@ from typing import Any
 import aiohttp
 
 from .const import API_BASE_URL
-from .parsers import SENSOR_PARSERS
+from .parsers import SENSOR_PARSERS, parse_generic_raw
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -261,7 +261,12 @@ class HomgarApiClient:
                     model = subdevice.get("model")
                     parser = SENSOR_PARSERS.get(model)
                     if parser is None:
-                        continue
+                        self.logger.info(
+                            "Using generic RAW fallback parser for unsupported subdevice %s model %s",
+                            subdevice.get("did"),
+                            model,
+                        )
+                        parser = parse_generic_raw
 
                     try:
                         parsed = parser(subdevice=subdevice, status_items=status_items)
