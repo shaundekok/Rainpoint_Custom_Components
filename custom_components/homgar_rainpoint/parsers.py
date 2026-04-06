@@ -533,25 +533,43 @@ def parse_hcs0530tho(
     if payload:
         p1 = _safe_slice(payload, 7, 9)
         p2 = _safe_slice(payload, 5, 7)
-        p3 = _safe_slice(payload, 15, 17)
-        p4 = _safe_slice(payload, 13, 15)
-        p5 = _safe_slice(payload, 19, 21)
-        p6 = _safe_slice(payload, 23, 25)
-        p7 = _safe_slice(payload, 21, 23)
-        p8 = _safe_slice(payload, 27, 29)
+        p3 = _safe_slice(payload, 53, 55)
+        p4 = _safe_slice(payload, 51, 53)
+        p5 = _safe_slice(payload, 57, 59)
+        p6 = _safe_slice(payload, 55, 57)
+        p7 = _safe_slice(payload, 35, 37)
+        p8 = _safe_slice(payload, 33, 35)
+        p9 = _safe_slice(payload, 39, 41)
+        p10 = _safe_slice(payload, 61, 63)
+        p11 = _safe_slice(payload, 59, 61)
+        p12 = _safe_slice(payload, 67, 69)
 
         device.add_entity(
             key="co2",
-            name="CO2",
+            name="CO₂",
             native_value=int(p1 + p2, 16) if p1 and p2 else None,
             device_class="carbon_dioxide",
             state_class="measurement",
             native_unit_of_measurement="ppm",
         )
         device.add_entity(
+            key="co2_low",
+            name="CO₂ Low",
+            native_value=int(p3 + p4, 16) if p3 and p4 else None,
+            device_class="carbon_dioxide",
+            native_unit_of_measurement="ppm",
+        )
+        device.add_entity(
+            key="co2_high",
+            name="CO₂ High",
+            native_value=int(p5 + p6, 16) if p5 and p6 else None,
+            device_class="carbon_dioxide",
+            native_unit_of_measurement="ppm",
+        )
+        device.add_entity(
             key="temperature",
             name="Temperature",
-            native_value=_f_tenths_hex_to_c(p3, p4),
+            native_value=_f_tenths_hex_to_c(p7, p8),
             device_class="temperature",
             state_class="measurement",
             native_unit_of_measurement="°C",
@@ -560,7 +578,7 @@ def parse_hcs0530tho(
         device.add_entity(
             key="humidity",
             name="Humidity",
-            native_value=int(p5, 16) if p5 else None,
+            native_value=int(p9, 16) if p9 else None,
             device_class="humidity",
             state_class="measurement",
             native_unit_of_measurement="%",
@@ -568,7 +586,7 @@ def parse_hcs0530tho(
         device.add_entity(
             key="battery",
             name="Battery",
-            native_value=_battery_pct_from_12bit(p6 + p7) if p6 and p7 else None,
+            native_value=_battery_pct_from_12bit(p10 + p11) if p10 and p11 else None,
             device_class="battery",
             state_class="measurement",
             native_unit_of_measurement="%",
@@ -577,7 +595,7 @@ def parse_hcs0530tho(
         device.add_entity(
             key="rssi",
             name="RF RSSI",
-            native_value=(int(p8, 16) - 256) if p8 else None,
+            native_value=(int(p12, 16) - 256) if p12 else None,
             device_class="signal_strength",
             state_class="measurement",
             native_unit_of_measurement="dBm",
@@ -637,11 +655,14 @@ def parse_hcs026frf(
         )
     return device
 
-
 def parse_generic_raw(
     *, subdevice: dict[str, Any], status_items: dict[str, dict[str, Any]]
 ) -> ParsedDevice:
-    """Fallback parser for unsupported RainPoint/Homgar subdevices."""
+    """Fallback parser for unsupported RainPoint/Homgar subdevices.
+
+    Creates a generic device with a single RAW data sensor so unsupported
+    models still show up in Home Assistant.
+    """
     model = subdevice.get("model") or "unknown_model"
     addr = subdevice.get("addr")
     did = str(subdevice.get("did") or f"unknown_{model}_{addr}")
@@ -662,6 +683,7 @@ def parse_generic_raw(
         name="Raw Data",
         native_value=payload or value or None,
         icon="mdi:code-json",
+        entity_category="diagnostic",
         extra_state_attributes={
             "full_status_value": value or None,
             "model": model,
@@ -674,7 +696,6 @@ def parse_generic_raw(
     )
 
     return device
-
 
 SENSOR_PARSERS = {
     "HCS021FRF": parse_hcs021frf,
