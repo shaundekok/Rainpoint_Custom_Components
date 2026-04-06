@@ -525,7 +525,7 @@ def parse_hcs0530tho(
     payload = value.split(";", 1)[1] if ";" in value else value
     device = ParsedDevice(
         device_id=str(subdevice["did"]),
-        device_name=subdevice.get("name") or "Temperature / Humidity Sensor",
+        device_name=subdevice.get("name") or "CO2 Sensor",
         model=subdevice.get("model", "HCS0530THO"),
         model_code=subdevice.get("modelCode"),
         via_device_id=str(subdevice.get("mid")) if subdevice.get("mid") is not None else None,
@@ -533,68 +533,42 @@ def parse_hcs0530tho(
     if payload:
         p1 = _safe_slice(payload, 7, 9)
         p2 = _safe_slice(payload, 5, 7)
-        p3 = _safe_slice(payload, 11, 13)
-        p4 = _safe_slice(payload, 9, 11)
-        p5 = _safe_slice(payload, 25, 27)
+        p3 = _safe_slice(payload, 15, 17)
+        p4 = _safe_slice(payload, 13, 15)
+        p5 = _safe_slice(payload, 19, 21)
         p6 = _safe_slice(payload, 23, 25)
-        p7 = _safe_slice(payload, 29, 31)
-        p8 = _safe_slice(payload, 35, 37)
-        p9 = _safe_slice(payload, 33, 35)
-        p10 = _safe_slice(payload, 39, 41)
-        p11 = _safe_slice(payload, 37, 39)
-        p12 = _safe_slice(payload, 43, 45)
+        p7 = _safe_slice(payload, 21, 23)
+        p8 = _safe_slice(payload, 27, 29)
 
+        device.add_entity(
+            key="co2",
+            name="CO2",
+            native_value=int(p1 + p2, 16) if p1 and p2 else None,
+            device_class="carbon_dioxide",
+            state_class="measurement",
+            native_unit_of_measurement="ppm",
+        )
         device.add_entity(
             key="temperature",
             name="Temperature",
-            native_value=_f_tenths_hex_to_c(p5, p6),
-            device_class="temperature",
-            state_class="measurement",
-            native_unit_of_measurement="°C",
-            suggested_display_precision=2,
-        )
-        device.add_entity(
-            key="temperature_high",
-            name="Temperature High",
             native_value=_f_tenths_hex_to_c(p3, p4),
             device_class="temperature",
-            native_unit_of_measurement="°C",
-            suggested_display_precision=2,
-        )
-        device.add_entity(
-            key="temperature_low",
-            name="Temperature Low",
-            native_value=_f_tenths_hex_to_c(p1, p2),
-            device_class="temperature",
+            state_class="measurement",
             native_unit_of_measurement="°C",
             suggested_display_precision=2,
         )
         device.add_entity(
             key="humidity",
             name="Humidity",
-            native_value=int(p7, 16) if p7 else None,
+            native_value=int(p5, 16) if p5 else None,
             device_class="humidity",
             state_class="measurement",
             native_unit_of_measurement="%",
         )
         device.add_entity(
-            key="humidity_high",
-            name="Humidity High",
-            native_value=int(p8, 16) if p8 else None,
-            device_class="humidity",
-            native_unit_of_measurement="%",
-        )
-        device.add_entity(
-            key="humidity_low",
-            name="Humidity Low",
-            native_value=int(p9, 16) if p9 else None,
-            device_class="humidity",
-            native_unit_of_measurement="%",
-        )
-        device.add_entity(
             key="battery",
             name="Battery",
-            native_value=_battery_pct_from_12bit(p10 + p11) if p10 and p11 else None,
+            native_value=_battery_pct_from_12bit(p6 + p7) if p6 and p7 else None,
             device_class="battery",
             state_class="measurement",
             native_unit_of_measurement="%",
@@ -603,7 +577,7 @@ def parse_hcs0530tho(
         device.add_entity(
             key="rssi",
             name="RF RSSI",
-            native_value=(int(p12, 16) - 256) if p12 else None,
+            native_value=(int(p8, 16) - 256) if p8 else None,
             device_class="signal_strength",
             state_class="measurement",
             native_unit_of_measurement="dBm",
