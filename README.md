@@ -1,6 +1,10 @@
 # Rainpoint API Custom Integration
 Thank you to https://github.com/Remboooo for making this possible
 
+I have been working Brett on the following integration. I have made the decision to stop any further enhancements as his integration has taken this to the next level.
+
+https://github.com/brettmeyerowitz/homeassistant-homgar
+
 Please note that this is an experimental project and you use it at your own risk.
 
 Requirements:
